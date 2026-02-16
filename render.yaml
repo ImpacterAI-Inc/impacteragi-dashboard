@@ -1,0 +1,45 @@
+services:
+  - type: web
+    name: impacteragi-dashboard
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: npm install && npm run build && npx prisma generate
+    startCommand: npm start
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: NEXTAUTH_URL
+        value: https://impacteragi-dashboard.onrender.com
+      - key: NEXTAUTH_SECRET
+        generateValue: true
+      - key: AWS_REGION
+        value: us-east-1
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
+      - key: AWS_S3_BUCKET
+        value: impacteragi-digital-human
+      - key: AWS_SES_FROM_EMAIL
+        value: noreply@impacteragi.com
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: OPENCLAW_API_URL
+        value: http://localhost:8080
+      - key: OPENCLAW_API_KEY
+        value: development
+      - key: NEXT_PUBLIC_APP_NAME
+        value: ImpacterAGI
+      - key: NEXT_PUBLIC_APP_URL
+        value: https://impacteragi-dashboard.onrender.com
+      - key: NODE_ENV
+        value: production
+
+databases:
+  - name: impacteragi-db
+    databaseName: impacteragi
+    user: impacteragi
+    plan: free

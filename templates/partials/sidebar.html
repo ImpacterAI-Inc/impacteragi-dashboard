@@ -1,0 +1,45 @@
+<nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+    <div class="position-sticky pt-3">
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
+                    <i class="fas fa-tachometer-alt me-2"></i>
+                    Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'systems' %}active{% endif %}" href="{{ url_for('systems') }}">
+                    <i class="fas fa-cogs me-2"></i>
+                    Systems Control
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'leads' %}active{% endif %}" href="{{ url_for('leads') }}">
+                    <i class="fas fa-users me-2"></i>
+                    Leads
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'activity' %}active{% endif %}" href="{{ url_for('activity') }}">
+                    <i class="fas fa-list me-2"></i>
+                    Activity Log
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'settings' %}active{% endif %}" href="{{ url_for('settings') }}">
+                    <i class="fas fa-wrench me-2"></i>
+                    Settings
+                </a>
+            </li>
+        </ul>
+        
+        <hr class="my-3">
+        
+        <div class="px-3">
+            <div class="alert alert-success" role="alert" id="systemHealthIndicator">
+                <i class="fas fa-check-circle me-2"></i>
+                <strong>All Systems Operational</strong>
+            </div>
+        </div>
+    </div>
+</nav>

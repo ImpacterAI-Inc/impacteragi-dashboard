@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redeem Credits - ImpacterAGI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        p {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #555;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 18px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-align: center;
+            font-weight: 600;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 600;
+            display: none;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+
+        .message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 2px solid #bee5eb;
+        }
+
+        .code-info {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .code-info h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .code-info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .code-info-item:last-child {
+            border-bottom: none;
+        }
+
+        .code-info-item .label {
+            color: #666;
+        }
+
+        .code-info-item .value {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+        }
+
+        .login-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎁 Redeem Credit Code</h1>
+        <p>Enter your credit code to add credits to your account</p>
+
+        <div class="input-group">
+            <label for="creditCode">Credit Code</label>
+            <input 
+                type="text" 
+                id="creditCode" 
+                placeholder="ENTER-CODE-HERE"
+                autocomplete="off"
+                autocapitalize="characters"
+            >
+        </div>
+
+        <div id="codeInfo" class="code-info"></div>
+
+        <button id="redeemBtn" onclick="redeemCode()">Redeem Code</button>
+
+        <div id="message" class="message"></div>
+
+        <div class="login-link">
+            Not logged in? <a href="/login.html">Login here</a>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://handled-gordon-hired-nominations.trycloudflare.com/api';
+
+        // Check if code is in URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const codeFromUrl = urlParams.get('code');
+        if (codeFromUrl) {
+            document.getElementById('creditCode').value = codeFromUrl.toUpperCase();
+            checkCodeInfo(codeFromUrl);
+        }
+
+        // Auto-check code info when typing
+        let checkTimeout;
+        document.getElementById('creditCode').addEventListener('input', (e) => {
+            clearTimeout(checkTimeout);
+            const code = e.target.value.trim();
+            if (code.length >= 4) {
+                checkTimeout = setTimeout(() => checkCodeInfo(code), 500);
+            }
+        });
+
+        async function checkCodeInfo(code) {
+            try {
+                const response = await fetch(`${API_URL}/code-info/${code.toUpperCase()}`);
+                const data = await response.json();
+
+                const codeInfoDiv = document.getElementById('codeInfo');
+                
+                if (data.success) {
+                    codeInfoDiv.style.display = 'block';
+                    codeInfoDiv.innerHTML = `
+                        <h3>Code Details</h3>
+                        <div class="code-info-item">
+                            <span class="label">Credits:</span>
+                            <span class="value">${data.credits.toLocaleString()}</span>
+                        </div>
+                        <div class="code-info-item">
+                            <span class="label">Status:</span>
+                            <span class="value">${data.available ? '✅ Available' : '❌ Not Available'}</span>
+                        </div>
+                        ${data.uses_remaining !== undefined ? `
+                        <div class="code-info-item">
+                            <span class="label">Uses Remaining:</span>
+                            <span class="value">${data.uses_remaining}</span>
+                        </div>
+                        ` : ''}
+                        ${data.expires_at ? `
+                        <div class="code-info-item">
+                            <span class="label">Expires:</span>
+                            <span class="value">${new Date(data.expires_at).toLocaleDateString()}</span>
+                        </div>
+                        ` : ''}
+                    `;
+                } else {
+                    codeInfoDiv.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error checking code:', error);
+            }
+        }
+
+        async function redeemCode() {
+            const code = document.getElementById('creditCode').value.trim();
+            const messageDiv = document.getElementById('message');
+            const redeemBtn = document.getElementById('redeemBtn');
+
+            if (!code) {
+                showMessage('Please enter a credit code', 'error');
+                return;
+            }
+
+            // Get token from localStorage
+            const token = localStorage.getItem('token');
+            if (!token) {
+                showMessage('Please login first to redeem a code', 'error');
+                setTimeout(() => {
+                    window.location.href = '/login.html?redirect=redeem&code=' + code;
+                }, 2000);
+                return;
+            }
+
+            redeemBtn.disabled = true;
+            redeemBtn.textContent = 'Redeeming...';
+
+            try {
+                const response = await fetch(`${API_URL}/redeem-code`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ code: code.toUpperCase() })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showMessage(`🎉 ${data.message}`, 'success');
+                    setTimeout(() => {
+                        window.location.href = '/dashboard.html';
+                    }, 2000);
+                } else {
+                    showMessage(data.error || 'Failed to redeem code', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('Network error. Please try again.', 'error');
+            } finally {
+                redeemBtn.disabled = false;
+                redeemBtn.textContent = 'Redeem Code';
+            }
+        }
+
+        function showMessage(text, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+            messageDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

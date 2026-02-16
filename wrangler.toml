@@ -1,0 +1,8 @@
+name = "impacteragi-dashboard"
+compatibility_date = "2024-01-01"
+
+pages_build_output_dir = "out"
+
+[[kv_namespaces]]
+binding = "USERS_KV"
+id = "impacteragi_users"

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Systems - ImpacterAGI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% include 'partials/navbar.html' %}
+    
+    <div class="container-fluid">
+        <div class="row">
+            {% include 'partials/sidebar.html' %}
+            
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">
+                        <i class="fas fa-cogs me-2"></i>Systems Control
+                    </h1>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>System</th>
+                                <th>Status</th>
+                                <th>CPU</th>
+                                <th>Memory</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="systemsTable">
+                            {% for system_id, system in systems.items() %}
+                            <tr data-system="{{ system_id }}">
+                                <td>
+                                    <span class="fs-4 me-2">{{ system.icon }}</span>
+                                    <strong>{{ system.name }}</strong>
+                                </td>
+                                <td>
+                                    <span class="status-badge status-{{ system.status }}">
+                                        <i class="fas fa-circle"></i>
+                                        {{ 'Running' if system.running else 'Stopped' }}
+                                    </span>
+                                </td>
+                                <td>{{ system.cpu }}%</td>
+                                <td>{{ system.memory }} MB</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <button class="btn btn-sm btn-success start-btn" {% if system.running %}disabled{% endif %}>
+                                            <i class="fas fa-play"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-danger stop-btn" {% if not system.running %}disabled{% endif %}>
+                                            <i class="fas fa-stop"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-info logs-btn">
+                                            <i class="fas fa-file-alt"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <!-- Logs Modal -->
+    <div class="modal fade" id="logsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">System Logs</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <pre id="logsContent" class="logs-content">Loading logs...</pre>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+node_modules/
+.next/
+.wrangler/
+*.tar.gz
+*.log
+.env
+.env.local
+out/

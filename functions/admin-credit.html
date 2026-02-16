@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin - Credit Trina</title>
+    <style>
+        body { font-family: Arial; padding: 40px; background: #f5f5f5; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        button { background: #4F46E5; color: white; padding: 15px 30px; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; width: 100%; }
+        button:hover { background: #4338CA; }
+        .result { margin-top: 20px; padding: 15px; border-radius: 5px; }
+        .success { background: #D1FAE5; color: #065F46; }
+        .error { background: #FEE2E2; color: #991B1B; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Emergency Admin Panel</h1>
+        <p>Credit Trina's account directly</p>
+        <button onclick="creditTrina()">Give Trina 10,000 Credits NOW</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        async function creditTrina() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Processing...';
+            
+            try {
+                // Step 1: Login as Trina
+                const loginRes = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'trinafaller7@gmail.com',
+                        password: 'temporary'
+                    })
+                });
+                
+                const loginData = await loginRes.json();
+                
+                if (!loginData.success) {
+                    resultDiv.innerHTML = `<div class="result error">Login failed: ${loginData.error}</div>`;
+                    return;
+                }
+                
+                // Step 2: Redeem BETA10K
+                const redeemRes = await fetch('/api/redeem', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${loginData.token}`
+                    },
+                    body: JSON.stringify({ code: 'BETA10K' })
+                });
+                
+                const redeemData = await redeemRes.json();
+                
+                if (redeemData.success) {
+                    resultDiv.innerHTML = `<div class="result success">✅ SUCCESS! Trina now has ${redeemData.credits} credits!</div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="result error">Redeem failed: ${redeemData.error}</div>`;
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="result error">Error: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html>

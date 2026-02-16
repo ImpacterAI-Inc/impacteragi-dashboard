@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - ImpacterAGI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% include 'partials/navbar.html' %}
+    
+    <div class="container-fluid">
+        <div class="row">
+            {% include 'partials/sidebar.html' %}
+            
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">
+                        <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                    </h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <button class="btn btn-success btn-lg me-2" id="startAllBtn">
+                            <i class="fas fa-play me-2"></i>START ALL
+                        </button>
+                        <button class="btn btn-danger btn-lg" id="stopAllBtn">
+                            <i class="fas fa-stop me-2"></i>STOP ALL
+                        </button>
+                    </div>
+                </div>
+                
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                
+                <!-- Stats Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-3 mb-3">
+                        <div class="stat-card">
+                            <div class="stat-icon bg-success">
+                                <i class="fas fa-power-off"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3 id="systemsRunning">{{ stats.systems_running }}</h3>
+                                <p>Systems Running</p>
+                                <small class="text-muted">of {{ stats.systems_total }} total</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3 mb-3">
+                        <div class="stat-card">
+                            <div class="stat-icon bg-primary">
+                                <i class="fas fa-phone"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3 id="callsToday">{{ stats.calls_today }}</h3>
+                                <p>Calls Today</p>
+                                <small class="text-muted">+12 from yesterday</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3 mb-3">
+                        <div class="stat-card">
+                            <div class="stat-icon bg-info">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3 id="emailsSent">{{ stats.emails_sent }}</h3>
+                                <p>Emails Sent</p>
+                                <small class="text-muted">Today</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3 mb-3">
+                        <div class="stat-card">
+                            <div class="stat-icon bg-warning">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3 id="leadsProcessed">{{ stats.leads_processed }}</h3>
+                                <p>Leads Processed</p>
+                                <small class="text-muted">Today</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Systems Grid -->
+                <h3 class="mb-3">System Status</h3>
+                <div class="row" id="systemsGrid">
+                    {% for system_id, system in systems.items() %}
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="system-card" data-system="{{ system_id }}">
+                            <div class="system-header">
+                                <div class="system-icon">{{ system.icon }}</div>
+                                <div class="system-info">
+                                    <h5>{{ system.name }}</h5>
+                                    <span class="status-badge status-{{ system.status }}">
+                                        <i class="fas fa-circle"></i>
+                                        {{ 'Running' if system.running else 'Stopped' }}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="system-stats">
+                                {% if system.running %}
+                                <div class="stat-item">
+                                    <i class="fas fa-microchip"></i>
+                                    <span>CPU: <strong>{{ system.cpu }}%</strong></span>
+                                </div>
+                                <div class="stat-item">
+                                    <i class="fas fa-memory"></i>
+                                    <span>RAM: <strong>{{ system.memory }} MB</strong></span>
+                                </div>
+                                {% else %}
+                                <div class="stat-item text-muted">
+                                    <i class="fas fa-info-circle"></i>
+                                    <span>System not active</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="system-actions">
+                                <button class="btn btn-sm btn-success start-btn" {% if system.running %}disabled{% endif %}>
+                                    <i class="fas fa-play"></i> Start
+                                </button>
+                                <button class="btn btn-sm btn-danger stop-btn" {% if not system.running %}disabled{% endif %}>
+                                    <i class="fas fa-stop"></i> Stop
+                                </button>
+                                <button class="btn btn-sm btn-info logs-btn">
+                                    <i class="fas fa-file-alt"></i> Logs
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Recent Activity -->
+                <h3 class="mb-3 mt-4">Recent Activity</h3>
+                <div class="activity-feed">
+                    <div class="activity-item">
+                        <div class="activity-icon bg-success">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                        <div class="activity-content">
+                            <strong>Voice AI Agent</strong> handled inbound call
+                            <small class="text-muted">2 minutes ago</small>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon bg-primary">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="activity-content">
+                            <strong>Email Monitor</strong> sent auto-reply
+                            <small class="text-muted">5 minutes ago</small>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon bg-info">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <div class="activity-content">
+                            <strong>John AI SDR</strong> qualified new lead
+                            <small class="text-muted">12 minutes ago</small>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <!-- Logs Modal -->
+    <div class="modal fade" id="logsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">System Logs</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <pre id="logsContent" class="logs-content">Loading logs...</pre>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>
